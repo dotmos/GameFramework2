@@ -17,14 +17,38 @@ namespace Framework.Services {
         }
 
         /// <summary>
-        /// Register a service with the injector
+        /// Register a service with the injector. Registers ALL interfaces of the service and the service class
         /// </summary>
         /// <param name="service"></param>
         public void Register(IService service) {
+            //Register all interfaces
+            Type[] serviceTypes = service.GetType().GetInterfaces();
+            foreach(Type t in serviceTypes) {
+                if (registeredServices.ContainsKey(t)) {
+                    registeredServices[t] = service;
+                } else {
+                    registeredServices.Add(t, service);
+                }
+            }
+            //Register class
             if (registeredServices.ContainsKey(service.GetType())) {
                 registeredServices[service.GetType()] = service;
             } else {
                 registeredServices.Add(service.GetType(), service);
+            }
+        }
+
+        /// <summary>
+        /// Registers the service with the injector, using the given generic T as key
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="service"></param>
+        public void Register<T>(IService service) {
+            Type interfaceType = typeof(T);
+            if (registeredServices.ContainsKey(interfaceType)) {
+                registeredServices[interfaceType] = service;
+            } else {
+                registeredServices.Add(interfaceType, service);
             }
         }
 

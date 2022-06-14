@@ -1,7 +1,13 @@
 using Framework.Services;
+using Framework.Services.GamestateService;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
+
+#if UNITY
+using UnityEngine;
+#endif
 
 namespace Framework {
     public interface ICore {
@@ -25,6 +31,17 @@ namespace Framework {
         public static Core GetInstance() {
             return coreInstance;
         }
+
+        public abstract void InjectServicesFor(object instance);
+
+        public abstract void Dispose();
+    }
+
+    /// <summary>
+    /// The framework's core. Everything starts here. Derive from this class and create your own core.
+    /// Then call CreateCore() in a static function of your derived class to launch the core.
+    /// </summary>
+    public abstract class Core<TCoreImplementation, TInitialGamestate> : Core where TCoreImplementation:Core,new() where TInitialGamestate : Services.GamestateService.IGamestate {
 
         /// <summary>
         /// The ticker used to tick/update the core
@@ -50,6 +67,13 @@ namespace Framework {
         /// The gamestate service. Takes over control once the core is set-up.
         /// </summary>
         Services.GamestateService.IGamestateService gamestateService;
+
+        /// <summary>
+        /// Creates the core. This should be the very first thing to do after launching the application
+        /// </summary>
+        protected static void CreateCore() {
+            coreInstance = new TCoreImplementation();
+        }
 
         public Core() {
             //async initialize. TODO: Create "real" async Task if NOT using Unity?
@@ -81,10 +105,10 @@ namespace Framework {
             services.Add(gamestateService);
             //Create additional services
             List<IService> _additionalServices = CreateServiceInstances();
-            if(_additionalServices != null && _additionalServices.Count > 0) {
+            if (_additionalServices != null && _additionalServices.Count > 0) {
                 services.AddRange(_additionalServices);
             }
-            
+
             //Register all services with serviceInjector
             for (int i = 0, iEnd = services.Count; i < iEnd; ++i) {
                 serviceInjector.Register(services[i]);
@@ -94,28 +118,43 @@ namespace Framework {
             Logger.Log("Cross-Injecting services ...");
             for (int i = 0, iEnd = services.Count; i < iEnd; ++i) {
                 serviceInjector.InjectServicesFor(services[i]);
-            }           
+            }
 
             //async service setup
+            Logger.Log("Initializing Services ...");
             await InitializeServicesAsync();
 
             //Trigger custom after-boot logic
             await AfterBootAsync();
 
-            //Set initial gamestate
+            //Dispose coreTicker
+            coreTicker.Dispose();
 
-            //Start ticking Core.Tick()
-            coreTicker.SetTickAction((t) => Tick(t));
+            //Register all gamestates
+            List<IGamestate> gamestates = CreateGamestates();
+            for(int i=0,iEnd = gamestates.Count; i<iEnd; ++i) {
+                gamestateService.Register(gamestates[i]);
+            }
+
+            Logger.Log("###### Core loaded! ######");
+
+            //Set initial gamestate
+            gamestateService.SwitchTo<TInitialGamestate>(InitialGamestateContext());
+
+            // Update coreTicker to tick Core.Tick() now
+            //coreTicker.SetTickAction((t) => Tick(t));
+
+            //Start Core.TickAsync()
+            StartTickAsync();
         }
 
         async Task InitializeServicesAsync() {
-            Logger.Log("Initializing services ...");
             //Initialize all services
             for (int i = 0; i < services.Count; ++i) {
                 //Initialize service
                 await services[i].InitializeAsync();
                 //Update boot progress
-                BootProgress = (i+1) / (float)services.Count;
+                BootProgress = (i + 1) / (float)services.Count;
             }
             BootProgress = 1.0f;
         }
@@ -124,7 +163,7 @@ namespace Framework {
         /// Inject services for the given object instance
         /// </summary>
         /// <param name="instance"></param>
-        public void InjectServicesFor(object instance) {
+        public override void InjectServicesFor(object instance) {
             serviceInjector.InjectServicesFor(instance);
         }
 
@@ -133,6 +172,17 @@ namespace Framework {
         /// </summary>
         /// <returns></returns>
         protected abstract List<IService> CreateServiceInstances();
+
+        /// <summary>
+        /// Create an return all gamestates that are used in the game
+        /// </summary>
+        protected abstract List<IGamestate> CreateGamestates();
+
+        /// <summary>
+        /// Create and return the initial gamestate context
+        /// </summary>
+        /// <returns></returns>
+        protected abstract object InitialGamestateContext();
 
         /// <summary>
         /// Called before any core logic is being created. Can be used to setup a boot animation.
@@ -151,31 +201,28 @@ namespace Framework {
         /// <returns></returns>
         protected virtual async Task AfterBootAsync() { await Task.Yield(); }
 
-        /// <summary>
-        /// Ticked regularly once the Core has finished booting
-        /// </summary>
-        /// <param name="deltaTime"></param>
-        protected virtual void Tick(float deltaTime) {
-            //Tick gamestate service
-            gamestateService.Tick(deltaTime);
+        async void StartTickAsync() {
+            Stopwatch watch = Stopwatch.StartNew();
+#if UNITY
+            while (Application.isPlaying) {
+                //Create delta time
+                float deltaTime = watch.ElapsedMilliseconds / 1000.0f;// Time.deltaTime;// Time.time - lastTick;
+                watch.Restart();
+
+                //Tick gamestate service
+                await gamestateService.TickAsync(deltaTime);
+
+                await Task.Yield();
+            }
+#else
+            NOT IMPLEMENTED
+#endif
+
+            await Task.Yield();
         }
 
-        public void Dispose() {
+        public override void Dispose() {
             coreTicker.Dispose();
-        }
-    }
-
-    /// <summary>
-    /// The framework's core. Everything starts here. Derive from this class and create your own core.
-    /// Then call CreateCore() in a static function of your derived class to launch the core.
-    /// </summary>
-    public abstract class Core<T> : Core where T:Core,new() {
-
-        /// <summary>
-        /// Creates the core. This should be the very first thing to do after launching the application
-        /// </summary>
-        protected static void CreateCore() {
-            coreInstance = new T();
         }
     }
 }
