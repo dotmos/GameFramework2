@@ -56,7 +56,19 @@ namespace Framework.Services.GamestateService {
 
         }
 
+        /// <summary>
+        /// Ticked from main thread
+        /// </summary>
+        /// <param name="deltaTime"></param>
         public virtual void Tick(float deltaTime) {
+
+        }
+
+        /// <summary>
+        /// Ticked from worker thread
+        /// </summary>
+        /// <param name="deltaTime"></param>
+        public virtual void TickThreaded(float deltaTime) {
 
         }
     }

@@ -16,7 +16,16 @@ namespace Framework.Services.GamestateService {
         /// </summary>
         void PostEnter();
 
+        /// <summary>
+        /// Ticked from main thread
+        /// </summary>
+        /// <param name="deltaTime"></param>
         void Tick(float deltaTime);
+        /// <summary>
+        /// Ticked from worker thread
+        /// </summary>
+        /// <param name="deltaTime"></param>
+        void TickThreaded(float deltaTime);
 
         /// <summary>
         /// Called before exitting the state

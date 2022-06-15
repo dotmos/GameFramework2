@@ -17,8 +17,7 @@ public class ExampleGamestate : Framework.Services.GamestateService.GamestateBas
     public override void PreEnter() {
         base.PreEnter();
 
-        Framework.Logger.Log("Entering example gamestate - " + context.name + " ...");
-        Framework.Logger.Log(gsService.ToString());
+        Framework.Logger.Log("Entering example gamestate - name:" + context.name + " - someNumber:" + context.someNumber.ToString() +" ...");
     }
 
     public override async Task OnEnterAsync() {
@@ -44,5 +43,16 @@ public class ExampleGamestate : Framework.Services.GamestateService.GamestateBas
     public override void PostEnter() {
         Framework.Logger.Log("Entered gamestate " + context.name + " !");
     }
-    
+
+    public override void Tick(float deltaTime) {
+        base.Tick(deltaTime);
+
+        Framework.Logger.Log("Main");
+    }
+
+    public override void TickThreaded(float deltaTime) {
+        base.TickThreaded(deltaTime);
+
+        Framework.Logger.Log("Threaded");
+    }
 }

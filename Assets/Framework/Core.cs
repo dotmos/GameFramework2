@@ -32,6 +32,11 @@ namespace Framework {
             return coreInstance;
         }
 
+        /// <summary>
+        /// Whether or not the core is currently running or booting
+        /// </summary>
+        public static bool IsRunning { get; protected set; }
+
         public abstract void InjectServicesFor(object instance);
 
         public abstract void Dispose();
@@ -84,6 +89,7 @@ namespace Framework {
             Logger.Log("Creating Core ...");
 
             BootProgress = 0;
+            IsRunning = true;
 
             //Trigger custom pre-boot logic
             await PreBootAsync();
@@ -204,7 +210,9 @@ namespace Framework {
         async void StartTickAsync() {
             Stopwatch watch = Stopwatch.StartNew();
 #if UNITY
-            while (Application.isPlaying) {
+            while (IsRunning) {
+                IsRunning = Application.isPlaying;
+
                 //Create delta time
                 float deltaTime = watch.ElapsedMilliseconds / 1000.0f;// Time.deltaTime;// Time.time - lastTick;
                 watch.Restart();
@@ -218,11 +226,14 @@ namespace Framework {
             NOT IMPLEMENTED
 #endif
 
+
+
             await Task.Yield();
         }
 
         public override void Dispose() {
             coreTicker.Dispose();
+            IsRunning = false;
         }
     }
 }
