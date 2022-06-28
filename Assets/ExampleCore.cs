@@ -52,6 +52,7 @@ public class ExampleCore : Core<ExampleCore, ExampleGamestate> {
         await base.PreBootAsync();
 
         loadingCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        loadingCube.GetComponent<Renderer>().material.color = Color.red;
         GameObject.DontDestroyOnLoad(loadingCube);
     }
 

@@ -32,6 +32,8 @@ namespace Framework.Services.GamestateService {
         public override async Task InitializeAsync() {
             await base.InitializeAsync();
 
+            await Task.Delay(1000);
+
             gamestates = new Dictionary<Type, IGamestate>();
             currentGamestate = null;
             nextGamestate = null;

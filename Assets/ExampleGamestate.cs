@@ -28,7 +28,7 @@ public class ExampleGamestate : Framework.Services.GamestateService.GamestateBas
         //Display a spinning cube while waiting
         var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
         System.Diagnostics.Stopwatch watch = System.Diagnostics.Stopwatch.StartNew();
-        for(int i=0; i<1000; ++i) {
+        for(int i=0; i<500; ++i) {
             go.transform.Rotate(0, 90*(watch.ElapsedMilliseconds/1000.0f), 0);
             watch.Restart();
             await Task.Delay(1);
@@ -47,12 +47,12 @@ public class ExampleGamestate : Framework.Services.GamestateService.GamestateBas
     public override void Tick(float deltaTime) {
         base.Tick(deltaTime);
 
-        Framework.Logger.Log("Main");
+        Framework.Logger.Log("Main Thread");
     }
 
     public override void TickThreaded(float deltaTime) {
         base.TickThreaded(deltaTime);
 
-        Framework.Logger.Log("Threaded");
+        Framework.Logger.Log("Worker Thread");
     }
 }
