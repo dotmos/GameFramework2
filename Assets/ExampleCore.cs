@@ -1,3 +1,4 @@
+#if !DEACTIVATE_EXAMPLECORE
 #if UNITY
 using UnityEngine;
 #endif
@@ -70,3 +71,4 @@ public class ExampleCore : Core<ExampleCore, ExampleGamestate> {
     //--------------------------------------------------------
 #endif
 }
+#endif
