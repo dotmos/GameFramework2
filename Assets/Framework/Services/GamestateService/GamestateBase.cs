@@ -16,7 +16,7 @@ namespace Framework.Services.GamestateService {
         /// Called before entering the gamestate
         /// </summary>
         public virtual void PreEnter() {
-            Core.GetInstance().InjectServicesFor(this);
+            Core.GetInstance().InjectServicesFor(this); 
         }
 
         /// <summary>

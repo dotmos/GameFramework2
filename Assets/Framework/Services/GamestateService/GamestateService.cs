@@ -104,7 +104,7 @@ namespace Framework.Services.GamestateService {
         /// </summary>
         /// <param name="barrier"></param>
         void ThreadRendezvouz(Barrier barrier) {
-            Logger.Log("-> Thread Rendezvouz");
+            //Logger.Log("-> Thread Rendezvouz");
             //Delta time
             workerThreadData.deltaTime = deltaTime;
             //TODO: Copy user-input from mainThread to workerThread

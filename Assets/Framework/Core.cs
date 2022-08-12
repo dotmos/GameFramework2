@@ -61,7 +61,7 @@ namespace Framework {
         /// <summary>
         /// The service injector that is used to inject services using the [InjectService] attribute
         /// </summary>
-        Framework.Services.ServiceInjector serviceInjector;
+        public Framework.Services.ServiceInjector serviceInjector;
 
         /// <summary>
         /// Holds all services that the core can use
