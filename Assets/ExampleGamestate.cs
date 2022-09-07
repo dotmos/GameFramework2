@@ -1,3 +1,4 @@
+#if ENABLE_FRAMEWORK_EXAMPLE
 using Framework;
 using Framework.Services;
 using System.Threading.Tasks;
@@ -62,3 +63,4 @@ public class ExampleGamestate : Framework.Services.GamestateService.GamestateBas
         Framework.Logger.Log("Rendesvouz on thread " + System.Threading.Thread.CurrentThread.Name);
     }
 }
+#endif
