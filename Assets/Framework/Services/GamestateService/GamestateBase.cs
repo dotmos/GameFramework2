@@ -13,14 +13,14 @@ namespace Framework.Services.GamestateService {
         }
 
         /// <summary>
-        /// Called before entering the gamestate
+        /// Called BEFORE entering the gamestate
         /// </summary>
         public virtual void PreEnter() {
             Core.GetInstance().InjectServicesFor(this); 
         }
 
         /// <summary>
-        /// Asny enter
+        /// Aync enter. Called WHILE entering the gamestate
         /// </summary>
         /// <returns></returns>
         public virtual async Task OnEnterAsync() {
@@ -28,21 +28,21 @@ namespace Framework.Services.GamestateService {
         }
 
         /// <summary>
-        /// Called after the gamestate was entered
+        /// Called AFTER the gamestate was entered, but BEFORE Tick/TickThreaded is called for the first time
         /// </summary>
         public virtual void PostEnter() {
 
         }
 
         /// <summary>
-        /// Called before the gamestate is exitted
+        /// Called BEFORE the gamestate is exitted
         /// </summary>
         public virtual void PreExit() {
 
         }
 
         /// <summary>
-        /// Async exit
+        /// Async exit. Called WHILE exitting the gamestate
         /// </summary>
         /// <returns></returns>
         public virtual async Task OnExitAsync() {
@@ -50,14 +50,14 @@ namespace Framework.Services.GamestateService {
         }
 
         /// <summary>
-        /// Called after the gamestate is exitted
+        /// Called AFTER the gamestate is exitted and BEFORE the next gamestate is entered
         /// </summary>
         public virtual void PostExit() {
 
         }
 
         /// <summary>
-        /// Ticked from main thread
+        /// Tick from main thread. Once per frame.
         /// </summary>
         /// <param name="deltaTime"></param>
         public virtual void Tick(float deltaTime) {
@@ -65,7 +65,7 @@ namespace Framework.Services.GamestateService {
         }
 
         /// <summary>
-        /// Ticked from worker thread
+        /// Tick. from worker thread (NOT Unity's main thread)
         /// </summary>
         /// <param name="deltaTime"></param>
         public virtual void TickThreaded(float deltaTime) {
@@ -73,7 +73,8 @@ namespace Framework.Services.GamestateService {
         }
 
         /// <summary>
-        /// Called when the main- and workerthread rendezvouz. This happens once each frame
+        /// Called once per frame, when Unity's main thread and the workerThread rendezvouz. Use this to interchange data between the two threads.
+        /// IMPORTANt: Make sure to keep this function as short/performant as possible, as both threads will wait for this function to finish! No heavy processing here! Do that in Tick() and TickThreaded()!
         /// </summary>
         public virtual void OnThreadRendezvouz() {
 

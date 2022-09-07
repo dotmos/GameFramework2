@@ -2,7 +2,16 @@
 
 Requires Unity 2022.1 or later
 
+# Getting Started
+
+Clone the repo and open it with Unity.
+Press play.
+
+Have a look at ExampleCore and ExampleGamestate to get an idea of how things work.
+
 # TODO
+
+Implement missing functions for non-Unity projects
 
 Services:
 - Service dependecies during initialization?
