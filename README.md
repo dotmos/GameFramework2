@@ -4,18 +4,15 @@ TODO:
 
 Services:
 - Service dependecies during initialization?
+- Create a service for enabling/disabling a loading screen as well as updating the loadingscreen progress
 
-Passiert der Thread Rendevouz wirklich auf MainThread
+Is the Thread Rendevouz happening on MainThread?
 
-GamestateService.Switch aktuell nicht threadsafe 
+GamestateService.Switch is not threadsafe. That should not be a problem though, just switch from main thread?
 
 Gamestates:
-- Evtl. zusätzlich noch Liste mit Gamestates die nach dem aktuellen State geladen werden sollen?
-
-Service der nur dafür da ist einen Ladescreen an/aus zu schalten und zu updaten
+- Create a list of followup gamestates that should be loaded when the current gamestate is finished?
 
 Generator:
-- Components: Serialisierung abstrahieren
-- Services: Automatisch "serviceData" generieren und implementieren
-
-Generator liegt schon bei Tom im öffentlichen github
+- Components: Abstract serialization
+- Services: Automagically create "serviceData" and implement serialization for it
