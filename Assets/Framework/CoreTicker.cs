@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 
-#if UNITY
+#if UNITY_2022_1_OR_NEWER
 using UnityEngine;
 #endif
 
@@ -11,7 +11,7 @@ namespace Framework {
         void SetTickAction(Action<float> a);
     }
 
-#if UNITY
+#if UNITY_2022_1_OR_NEWER
     /// <summary>
     /// Helper class for ticking the Core
     /// </summary>

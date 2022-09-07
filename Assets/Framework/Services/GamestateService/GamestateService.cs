@@ -45,6 +45,7 @@ namespace Framework.Services.GamestateService {
             threadBarrier = new Barrier(2, ThreadRendezvouz);
             //Create worker thread
             workerThread = new Thread(WorkerThread);
+            workerThread.Name = "GamestateService-WorkerThread";
             workerThread.Start();
         }
 
@@ -107,6 +108,9 @@ namespace Framework.Services.GamestateService {
             //Logger.Log("-> Thread Rendezvouz");
             //Delta time
             workerThreadData.deltaTime = deltaTime;
+
+            currentGamestate.OnThreadRendezvouz();
+
             //TODO: Copy user-input from mainThread to workerThread
 
             //TODO: Grab output from workerThread and copy to main thread for processing (i.e. rendering-data).

@@ -1,5 +1,5 @@
 #if !DEACTIVATE_EXAMPLECORE
-#if UNITY
+#if UNITY_2022_1_OR_NEWER
 using UnityEngine;
 #endif
 
@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Framework.Services.GamestateService;
 
 public class ExampleCore : Core<ExampleCore, ExampleGamestate> {
-#if UNITY
+#if UNITY_2022_1_OR_NEWER
 #if UNITY_EDITOR
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
 #else
@@ -18,6 +18,9 @@ public class ExampleCore : Core<ExampleCore, ExampleGamestate> {
 #endif // UNITY_EDITOR
 #endif // UNITY
     static void Startup() {
+        if(System.Threading.Thread.CurrentThread.Name != "MainThread") {
+            System.Threading.Thread.CurrentThread.Name = "MainThread";
+        }
         CreateCore();
         
     }
@@ -44,7 +47,7 @@ public class ExampleCore : Core<ExampleCore, ExampleGamestate> {
         return context;
     }
 
-#if UNITY
+#if UNITY_2022_1_OR_NEWER
     //--------------------------------------------------------
     //Simple boot loading animation
     //--------------------------------------------------------

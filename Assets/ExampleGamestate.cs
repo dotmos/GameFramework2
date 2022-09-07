@@ -2,7 +2,7 @@ using Framework;
 using Framework.Services;
 using System.Threading.Tasks;
 
-#if UNITY
+#if UNITY_2022_1_OR_NEWER
 using UnityEngine;
 #endif
 
@@ -23,7 +23,7 @@ public class ExampleGamestate : Framework.Services.GamestateService.GamestateBas
     public override async Task OnEnterAsync() {
         await base.OnEnterAsync();
 
-#if UNITY
+#if UNITY_2022_1_OR_NEWER
         //Wait some artificial time
         //Display a spinning cube while waiting
         var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -53,6 +53,12 @@ public class ExampleGamestate : Framework.Services.GamestateService.GamestateBas
     public override void TickThreaded(float deltaTime) {
         base.TickThreaded(deltaTime);
 
-        Framework.Logger.Log("Worker Thread");
+        Framework.Logger.Log(System.Threading.Thread.CurrentThread.Name+".Tick");
+    }
+
+    public override void OnThreadRendezvouz() {
+        base.OnThreadRendezvouz();
+
+        Framework.Logger.Log("Rendesvouz on thread " + System.Threading.Thread.CurrentThread.Name);
     }
 }

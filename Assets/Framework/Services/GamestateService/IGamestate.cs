@@ -28,6 +28,11 @@ namespace Framework.Services.GamestateService {
         void TickThreaded(float deltaTime);
 
         /// <summary>
+        /// Called when the main- and workerthread rendezvouz. This happens once each frame
+        /// </summary>
+        void OnThreadRendezvouz();
+
+        /// <summary>
         /// Called before exitting the state
         /// </summary>
         void PreExit();

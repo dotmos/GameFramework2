@@ -71,5 +71,12 @@ namespace Framework.Services.GamestateService {
         public virtual void TickThreaded(float deltaTime) {
 
         }
+
+        /// <summary>
+        /// Called when the main- and workerthread rendezvouz. This happens once each frame
+        /// </summary>
+        public virtual void OnThreadRendezvouz() {
+
+        }
     }
 }

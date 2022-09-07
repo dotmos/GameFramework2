@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
-#if UNITY
+#if UNITY_2022_1_OR_NEWER
 using UnityEngine;
 #endif
 
@@ -209,7 +209,7 @@ namespace Framework {
 
         async void StartTickAsync() {
             Stopwatch watch = Stopwatch.StartNew();
-#if UNITY
+#if UNITY_2022_1_OR_NEWER
             while (IsRunning) {
                 IsRunning = Application.isPlaying;
 
