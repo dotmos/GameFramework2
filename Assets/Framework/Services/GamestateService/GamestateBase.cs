@@ -2,6 +2,8 @@ using System.Threading.Tasks;
 
 namespace Framework.Services.GamestateService {
     public class GamestateBase<TContext> : IGamestate {
+        [InjectService] protected Framework.Services.GamestateService.IGamestateService gamestateService;
+
         protected TContext context;
         
         /// <summary>
