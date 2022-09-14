@@ -1,4 +1,4 @@
-using Framework.Services;
+﻿using Framework.Services;
 using Framework.Services.GamestateService;
 using System;
 using System.Collections.Generic;
@@ -40,6 +40,12 @@ namespace Framework {
         public abstract void InjectServicesFor(object instance);
 
         public abstract void Dispose();
+
+		/// <summary>
+		/// Returns all services
+		/// </summary>
+		/// <returns></returns>
+		public abstract List<IService> GetServices();
     }
 
     /// <summary>
@@ -230,6 +236,14 @@ namespace Framework {
 
             await Task.Yield();
         }
+
+		/// <summary>
+		/// Return all registered services
+		/// </summary>
+		/// <returns></returns>
+		public override List<IService> GetServices() {
+			return services;
+		}
 
         public override void Dispose() {
             coreTicker.Dispose();
