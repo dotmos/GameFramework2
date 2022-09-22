@@ -136,17 +136,17 @@ namespace Framework {
             Logger.Log("Initializing Services ...");
             await InitializeServicesAsync();
 
-            //Trigger custom after-boot logic
-            await AfterBootAsync();
-
-            //Dispose coreTicker
-            coreTicker.Dispose();
-
             //Register all gamestates
             List<IGamestate> gamestates = CreateGamestates();
             for(int i=0,iEnd = gamestates.Count; i<iEnd; ++i) {
                 gamestateService.Register(gamestates[i]);
             }
+
+			//Dispose coreTicker
+			coreTicker.Dispose();
+
+			//Trigger custom after-boot logic
+			await AfterBootAsync();
 
             Logger.Log("###### Core loaded! ######");
 
