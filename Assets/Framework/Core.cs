@@ -94,7 +94,9 @@ namespace Framework {
         async void InitializeAsync() {
             Logger.Log("Creating Core ...");
 
-            BootProgress = 0;
+			Application.wantsToQuit += OnQuit;
+
+			BootProgress = 0;
             IsRunning = true;
 
             //Trigger custom pre-boot logic
@@ -236,6 +238,14 @@ namespace Framework {
 
             await Task.Yield();
         }
+
+		bool OnQuit() {
+			for (int i = 0, count = services.Count; i < count; ++i) {
+				services[i].OnQuit();
+			}
+
+			return true;
+		}
 
 		/// <summary>
 		/// Return all registered services

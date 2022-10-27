@@ -21,5 +21,7 @@ namespace Framework.Services {
 
 		public virtual void OnSaveGameLoaded() {
 		}
+
+		public virtual void OnQuit() {}
 	}
 }
