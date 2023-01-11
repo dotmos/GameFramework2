@@ -19,8 +19,12 @@ namespace Framework.Services {
 		public virtual void OnNewSession() {
 		}
 
+		public virtual void OnExitSession() {
+		}
+
 		public virtual void OnSaveGameLoaded() {
 		}
+
 
 		public virtual void OnQuit() {}
 	}

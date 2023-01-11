@@ -15,6 +15,10 @@ namespace Framework.Services {
 		/// </summary>
 		void OnNewSession();
 
+		/// <summary>
+		/// Callback on session exit
+		/// </summary>
+		void OnExitSession();
 
 		/// <summary>
 		/// Callback after SaveGameData was loaded
