@@ -1,7 +1,10 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Framework.Services.GamestateService {
     public interface IGamestateService : IService {
+
+		IGamestate Current { get; }
+
         /// <summary> 
 		///Register a new gamestate
 		/// </summary> 
