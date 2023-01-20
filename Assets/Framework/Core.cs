@@ -83,7 +83,19 @@ namespace Framework {
         /// Creates the core. This should be the very first thing to do after launching the application
         /// </summary>
         protected static void CreateCore() {
-            coreInstance = new TCoreImplementation();
+#if UNITY_EDITOR
+			// Stop tasks that are still running in the background when stopping the app in the unity editor by triggering a domain reload. Not the most elegant way, but it does the job and just kills everything.
+			UnityEditor.EditorApplication.playModeStateChanged += state => {
+				if (state == UnityEditor.PlayModeStateChange.ExitingPlayMode) {
+					UnityEngine.Debug.Log("[AppInit] Reloading scripts to prevent dangling Tasks from continuing executing in edit mode");
+					UnityEditor.EditorUtility.RequestScriptReload();
+					// Not sure if needed
+					//UnityEditor.EditorApplication.isPaused = paused;
+				}
+			};
+#endif
+
+			coreInstance = new TCoreImplementation();
         }
 
         public Core() {
@@ -91,7 +103,7 @@ namespace Framework {
             InitializeAsync();
         }
 
-        async void InitializeAsync() {
+        async Task InitializeAsync() {
             Logger.Log("Creating Core ...");
 
 			Application.wantsToQuit += OnQuit;
