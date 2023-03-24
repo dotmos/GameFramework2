@@ -86,7 +86,7 @@ namespace Framework {
 #if UNITY_EDITOR
 			// Stop tasks that are still running in the background when stopping the app in the unity editor by triggering a domain reload. Not the most elegant way, but it does the job and just kills everything.
 			UnityEditor.EditorApplication.playModeStateChanged += state => {
-				if (state == UnityEditor.PlayModeStateChange.ExitingPlayMode) {
+				if (state == UnityEditor.PlayModeStateChange.EnteredEditMode) {
 					UnityEngine.Debug.Log("[AppInit] Reloading scripts to prevent dangling Tasks from continuing executing in edit mode");
 					UnityEditor.EditorUtility.RequestScriptReload();
 					// Not sure if needed
