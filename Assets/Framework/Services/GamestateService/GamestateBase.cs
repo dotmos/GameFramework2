@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Framework.Services.GamestateService {
     public class GamestateBase<TContext> : IGamestate {
@@ -58,19 +58,19 @@ namespace Framework.Services.GamestateService {
 
         }
 
-        /// <summary>
-        /// Tick from main thread. Once per frame.
-        /// </summary>
-        /// <param name="deltaTime"></param>
-        public virtual void Tick(float deltaTime) {
+		/// <summary>
+		/// Tick from main thread. Once per frame.
+		/// </summary>
+		/// <param name="unscaledDeltaTime"></param>
+		public virtual void Tick(float unscaledDeltaTime) {
 
         }
 
-        /// <summary>
-        /// Tick. from worker thread (NOT Unity's main thread)
-        /// </summary>
-        /// <param name="deltaTime"></param>
-        public virtual void TickThreaded(float deltaTime) {
+		/// <summary>
+		/// Tick. from worker thread (NOT Unity's main thread)
+		/// </summary>
+		/// <param name="unscaledDeltaTime"></param>
+		public virtual void TickThreaded(float unscaledDeltaTime) {
 
         }
 

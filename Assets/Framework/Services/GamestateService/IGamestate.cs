@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Framework.Services.GamestateService {
     public interface IGamestate {
@@ -16,16 +16,16 @@ namespace Framework.Services.GamestateService {
         /// </summary>
         void PostEnter();
 
-        /// <summary>
-        /// Ticked from main thread
-        /// </summary>
-        /// <param name="deltaTime"></param>
-        void Tick(float deltaTime);
-        /// <summary>
-        /// Ticked from worker thread
-        /// </summary>
-        /// <param name="deltaTime"></param>
-        void TickThreaded(float deltaTime);
+		/// <summary>
+		/// Ticked from main thread
+		/// </summary>
+		/// <param name="unscaledDeltaTime"></param>
+		void Tick(float unscaledDeltaTime);
+		/// <summary>
+		/// Ticked from worker thread
+		/// </summary>
+		/// <param name="unscaledDeltaTime"></param>
+		void TickThreaded(float unscaledDeltaTime);
 
         /// <summary>
         /// Called when the main- and workerthread rendezvouz. This happens once each frame
