@@ -79,6 +79,11 @@ namespace Framework {
         /// </summary>
         Services.GamestateService.IGamestateService gamestateService;
 
+		/// <summary>
+		/// Wait for core being startedup using the underlying task
+		/// </summary>
+		TaskCompletionSource<Core> startupFinishedTask;
+
         /// <summary>
         /// Creates the core. This should be the very first thing to do after launching the application
         /// </summary>
@@ -163,6 +168,12 @@ namespace Framework {
 			await AfterBootAsync();
 
             Logger.Log("###### Core loaded! ######");
+
+			if (startupFinishedTask != null) {
+				// someone waits for the core to be started up
+				startupFinishedTask.SetResult(this);
+				startupFinishedTask = null;
+			}
 
             //Set initial gamestate
             gamestateService.SwitchTo<TInitialGamestate>(InitialGamestateContext());
@@ -265,6 +276,18 @@ namespace Framework {
 		/// <returns></returns>
 		public override List<IService> GetServices() {
 			return services;
+		}
+
+		/// <summary>
+		/// Get Task that wait for the core be started up.
+		/// 
+		/// </summary>
+		/// <returns></returns>
+		public Task WaitForStartupFinished() {
+			if (startupFinishedTask==null) {
+				startupFinishedTask = new TaskCompletionSource<Core>();
+			}
+			return startupFinishedTask.Task;
 		}
 
         public override void Dispose() {

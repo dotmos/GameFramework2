@@ -1,11 +1,16 @@
 ﻿using System.Threading.Tasks;
 
 namespace Framework.Services.GamestateService {
-    public interface IGamestateService : IService {
+	public interface IGamestateService : IService {
 
 		IGamestate Current { get; }
 
-        /// <summary> 
+		/// <summary>
+		/// Is the current gamestate started (finished the whole startup-lifecycle)
+		/// </summary>
+		bool IsCurrentGamestateStarted { get; }
+
+		/// <summary> 
 		///Register a new gamestate
 		/// </summary> 
 		void Register(IGamestate gamestate);
@@ -15,6 +20,26 @@ namespace Framework.Services.GamestateService {
 		/// </summary> 
 		void SwitchTo<TGamestate>(object context = null) where TGamestate : IGamestate;
 
-        Task TickAsync(float deltaTime);
-    }
+		Task TickAsync(float deltaTime);
+
+		/// <summary>
+		/// Wait until a new(!!) gamestate is started!
+		/// If the current gamestate is still in startup this will wait for the current to startup
+		/// CAUTION: this will not actively wait for you! You need to await on the returned task
+		/// 
+		/// This is mainly supposed to be used for automatic testing
+		/// </summary>
+		/// <returns></returns>
+		Task<IGamestate> WaitForGamestateStarted();
+
+		/// <summary>
+		/// Wait for a specific gamestate being started! 
+		/// CAUTION: this will not actively wait for you! You need to await on the returned task
+		/// 
+		/// This is mainly supposed to be used for automatic testing
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <returns></returns>
+		Task<IGamestate> WaitForGamestateStarted<T>();
+	}
 }

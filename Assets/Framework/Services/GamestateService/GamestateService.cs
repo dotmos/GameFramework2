@@ -2,126 +2,196 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEngine.Assertions;
 
 namespace Framework.Services.GamestateService {
-    public class GamestateService : ServiceBase, IGamestateService {
-        Dictionary<Type, IGamestate> gamestates;
+	public class GamestateService : ServiceBase, IGamestateService {
+		Dictionary<Type, IGamestate> gamestates;
 
-        IGamestate currentGamestate;
-        IGamestate nextGamestate;
+		IGamestate currentGamestate;
+		IGamestate nextGamestate;
 
 		public IGamestate Current => currentGamestate;
 
-        /// <summary>
-        /// A worker thread for ticking currentGamestate.TickThreaded()
-        /// </summary>
-        Thread workerThread;
-        /// <summary>
-        /// Thread barrier to rendevouz mainThread and workerthread
-        /// </summary>
-        Barrier threadBarrier;
+		/// <summary>
+		/// A worker thread for ticking currentGamestate.TickThreaded()
+		/// </summary>
+		Thread workerThread;
+		/// <summary>
+		/// Thread barrier to rendevouz mainThread and workerthread
+		/// </summary>
+		Barrier threadBarrier;
 
-        /// <summary>
-        /// Current delta time
-        /// </summary>
-        float deltaTime;
-        
-        class WorkerThreadData {
-            public float deltaTime;
-        }
-        WorkerThreadData workerThreadData;
+		/// <summary>
+		/// Current delta time
+		/// </summary>
+		float deltaTime;
 
-        public override async Task InitializeAsync() {
-            await base.InitializeAsync();
+		class WorkerThreadData {
+			public float deltaTime;
+		}
+		WorkerThreadData workerThreadData;
 
-            await Task.Delay(1000);
+		/// <summary>
+		/// flag to indicate if the current gamestate finished the whole startup-lifecycle
+		/// </summary>
+		bool currentGamestateStarted = false;
+		/// <summary>
+		/// TaskCompletion to wait for 
+		/// </summary>
+		TaskCompletionSource<IGamestate> waitForGSStarted;
+		object lockWaitForGSStarted = new object();
 
-            gamestates = new Dictionary<Type, IGamestate>();
-            currentGamestate = null;
-            nextGamestate = null;
+		/// <summary>
+		/// currently (someone) is waiting for this specific task to be finished
+		/// </summary>
+		public Type waitForSpecificGamestateType = null;
 
-            //Create worker thread data object
-            workerThreadData = new WorkerThreadData();
+		/// <summary>
+		/// Is the current gamestate started (finished the whole startup-lifecycle)
+		/// </summary>
+		public bool IsCurrentGamestateStarted => currentGamestateStarted;
 
-            //barrier to wait for two threads: mainThread and workerThread. On rendezvouz: Keep both threads "locked" and call ThreadRendezvouz(). Once ThreadRendezvouz() is finished, all threads will continue
-            threadBarrier = new Barrier(2, ThreadRendezvouz);
-            //Create worker thread
-            workerThread = new Thread(WorkerThread);
-            workerThread.Name = "GamestateService-WorkerThread";
-            workerThread.Start();
-        }
 
-        public void Register(IGamestate gamestate) {
-            gamestates.Add(gamestate.GetType(), gamestate);
-        }
+		public override async Task InitializeAsync() {
+			await base.InitializeAsync();
 
-        public void SwitchTo<TGamestate>(object context = null) where TGamestate : IGamestate {
-            nextGamestate = gamestates[typeof(TGamestate)];
-            nextGamestate.SetContext(context);
-        }
+			await Task.Delay(1000);
 
-        public async Task TickAsync(float deltaTime) {
-            if (nextGamestate != null) {
-                //Exit from current state
-                if(currentGamestate != null) {
-                    currentGamestate.PreExit();
+			gamestates = new Dictionary<Type, IGamestate>();
+			currentGamestate = null;
+			nextGamestate = null;
 
-                    await currentGamestate.OnExitAsync();
+			//Create worker thread data object
+			workerThreadData = new WorkerThreadData();
 
-                    currentGamestate.PostExit();
-                }
-                //Switch to next gamestate
-                nextGamestate.PreEnter();
-                currentGamestate = nextGamestate;
-                nextGamestate = null;
-                await currentGamestate.OnEnterAsync();
-                currentGamestate.PostEnter();
-            }
+			//barrier to wait for two threads: mainThread and workerThread. On rendezvouz: Keep both threads "locked" and call ThreadRendezvouz(). Once ThreadRendezvouz() is finished, all threads will continue
+			threadBarrier = new Barrier(2, ThreadRendezvouz);
+			//Create worker thread
+			workerThread = new Thread(WorkerThread);
+			workerThread.Name = "GamestateService-WorkerThread";
+			workerThread.Start();
+		}
 
-            //Tick current gamestate
-            if(currentGamestate != null) {
-                this.deltaTime = deltaTime;
-                //Fire barrier and wait for worker thread to also fire the barrier. Worker thread will call currentGamestate.TickThreaded()
-                threadBarrier.SignalAndWait();
-                //Tick current gamestate
-                currentGamestate.Tick(this.deltaTime);
-            }
-        }
+		public void Register(IGamestate gamestate) {
+			gamestates.Add(gamestate.GetType(), gamestate);
+		}
 
-        /// <summary>
-        /// Worker thread
-        /// </summary>
-        void WorkerThread() {
-            while (Core.IsRunning) {
-                //Fire barrier and wait for main thread to also fire the barrier
-                threadBarrier.SignalAndWait();
+		public void SwitchTo<TGamestate>(object context = null) where TGamestate : IGamestate {
+			nextGamestate = gamestates[typeof(TGamestate)];
+			nextGamestate.SetContext(context);
+		}
 
-                currentGamestate.TickThreaded(workerThreadData.deltaTime);
-            }
-            threadBarrier.Dispose();
-            Logger.Log("GamestateService: Disposed worker thread and rendezvouz-barrier.");
-        }
+		public async Task TickAsync(float deltaTime) {
+			if (nextGamestate != null) {
+				currentGamestateStarted = false;
 
-        /// <summary>
-        /// Called when worker thread and main thread rendevouz
-        /// </summary>
-        /// <param name="barrier"></param>
-        void ThreadRendezvouz(Barrier barrier) {
-            //Logger.Log("-> Thread Rendezvouz");
-            //Delta time
-            workerThreadData.deltaTime = deltaTime;
+				//Exit from current state
+				if (currentGamestate != null) {
+					currentGamestate.PreExit();
 
-            currentGamestate.OnThreadRendezvouz();
+					await currentGamestate.OnExitAsync();
 
-            //TODO: Copy user-input from mainThread to workerThread
+					currentGamestate.PostExit();
+				}
+				//Switch to next gamestate
+				nextGamestate.PreEnter();
+				currentGamestate = nextGamestate;
+				nextGamestate = null;
+				await currentGamestate.OnEnterAsync();
+				currentGamestate.PostEnter();
+				currentGamestateStarted = true;
+				// someone did wait for a gamestate to be started
+				lock (lockWaitForGSStarted) {
+					if (waitForGSStarted != null) {
+						if (waitForSpecificGamestateType == null || currentGamestate.GetType() == waitForSpecificGamestateType) {
+							// mark the underlying task completed
+							waitForSpecificGamestateType = null;
+							waitForGSStarted.SetResult(currentGamestate);
+							waitForGSStarted = null;
+						}
+					}
+				}
+			}
 
-            //TODO: Grab output from workerThread and copy to main thread for processing (i.e. rendering-data).
-            //NOTE: Maybe don't do that here, but do it in parallel while the workerThread is working. Let workerthread wait at specific position until main thread grabbed data before workerThread will overwrite it.
-            // workerThread: do stuff
-            // mainThread: process or copy "someData" and signal workerThread that data was copied. NOTE: Check which is faster (direct process or copy). Directly processing MIGHT be faster. Depends on how long it takes and if the workerThread still has work to do while mainThread processes data
-            // workerThread: Wait for mainThread to grab someData
-            // workerThread: change someData
+			//Tick current gamestate
+			if (currentGamestate != null) {
+				this.deltaTime = deltaTime;
+				//Fire barrier and wait for worker thread to also fire the barrier. Worker thread will call currentGamestate.TickThreaded()
+				threadBarrier.SignalAndWait();
+				//Tick current gamestate
+				currentGamestate.Tick(this.deltaTime);
+			}
+		}
 
-        }
-    }
+		/// <summary>
+		/// Worker thread
+		/// </summary>
+		void WorkerThread() {
+			while (Core.IsRunning) {
+				//Fire barrier and wait for main thread to also fire the barrier
+				threadBarrier.SignalAndWait();
+
+				currentGamestate.TickThreaded(workerThreadData.deltaTime);
+			}
+			threadBarrier.Dispose();
+			Logger.Log("GamestateService: Disposed worker thread and rendezvouz-barrier.");
+		}
+
+		/// <summary>
+		/// Called when worker thread and main thread rendevouz
+		/// </summary>
+		/// <param name="barrier"></param>
+		void ThreadRendezvouz(Barrier barrier) {
+			//Logger.Log("-> Thread Rendezvouz");
+			//Delta time
+			workerThreadData.deltaTime = deltaTime;
+
+			currentGamestate.OnThreadRendezvouz();
+
+			//TODO: Copy user-input from mainThread to workerThread
+
+			//TODO: Grab output from workerThread and copy to main thread for processing (i.e. rendering-data).
+			//NOTE: Maybe don't do that here, but do it in parallel while the workerThread is working. Let workerthread wait at specific position until main thread grabbed data before workerThread will overwrite it.
+			// workerThread: do stuff
+			// mainThread: process or copy "someData" and signal workerThread that data was copied. NOTE: Check which is faster (direct process or copy). Directly processing MIGHT be faster. Depends on how long it takes and if the workerThread still has work to do while mainThread processes data
+			// workerThread: Wait for mainThread to grab someData
+			// workerThread: change someData
+
+		}
+
+		/// <summary>
+		/// Wait until a new(!!) gamestate is started!
+		/// If the current gamestate is still in startup this will wait for the current to startup
+		/// CAUTION: this will not actively wait for you! You need to await on the returned task
+		/// 
+		/// This is mainly supposed to be used for automatic testing
+		/// </summary>
+		/// <returns></returns>
+		public Task<IGamestate> WaitForGamestateStarted() {
+			lock (lockWaitForGSStarted) {
+				if (waitForGSStarted == null) {
+					waitForGSStarted = new TaskCompletionSource<IGamestate>();
+				}
+			}
+			return waitForGSStarted.Task;
+		}
+
+		/// <summary>
+		/// Wait for a specific gamestate being started!
+		/// CAUTION: this will not actively wait for you! You need to await on the returned task
+		/// 
+		/// This is mainly supposed to be used for automatic testing
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <returns></returns>
+		public Task<IGamestate> WaitForGamestateStarted<T>() {
+			Type newType = typeof(T);
+			lock (lockWaitForGSStarted) {
+				Assert.IsTrue(waitForSpecificGamestateType == null || waitForSpecificGamestateType == typeof(T));
+				waitForSpecificGamestateType = typeof(T);
+			}
+			return WaitForGamestateStarted();
+		}
+	}
 }
