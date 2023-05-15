@@ -23,7 +23,7 @@ namespace Framework.Services {
 		/// <summary>
 		/// Callback after SaveGameData was loaded
 		/// </summary>
-		void OnSaveGameLoaded();
+		Task OnSaveGameLoaded();
 
 		/// <summary>
 		/// Called when the application wants to quit.

@@ -22,7 +22,8 @@ namespace Framework.Services {
 		public virtual void OnExitSession() {
 		}
 
-		public virtual void OnSaveGameLoaded() {
+		public virtual async Task OnSaveGameLoaded() {
+			await Task.Yield();
 		}
 
 
