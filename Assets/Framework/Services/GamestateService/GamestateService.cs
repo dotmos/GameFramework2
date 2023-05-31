@@ -12,6 +12,7 @@ namespace Framework.Services.GamestateService {
 		IGamestate nextGamestate;
 
 		public IGamestate Current => currentGamestate;
+		public IGamestate Next => nextGamestate;
 
 		/// <summary>
 		/// A worker thread for ticking currentGamestate.TickThreaded()

@@ -4,6 +4,7 @@ namespace Framework.Services.GamestateService {
 	public interface IGamestateService : IService {
 
 		IGamestate Current { get; }
+		IGamestate Next { get; }
 
 		/// <summary>
 		/// Is the current gamestate started (finished the whole startup-lifecycle)
