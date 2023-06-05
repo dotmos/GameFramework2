@@ -3,7 +3,13 @@
 namespace Framework.Services.GamestateService {
 	public interface IGamestateService : IService {
 
+		/// <summary>
+		/// !WARNING! If you are using this, you are probably doing something wrong as this goes against the idea of how gamestates work! ONLY used for test driven development!
+		/// </summary>
 		IGamestate Current { get; }
+		/// <summary>
+		/// !WARNING! If you are using this, you are probably doing something wrong as this goes against the idea of how gamestates work! ONLY used for test driven development!
+		/// </summary>
 		IGamestate Next { get; }
 
 		/// <summary>
@@ -24,6 +30,7 @@ namespace Framework.Services.GamestateService {
 		Task TickAsync(float deltaTime);
 
 		/// <summary>
+		/// !WARNING! If you are using this, you are doing something wrong! ONLY used for test driven development!
 		/// Wait until a new(!!) gamestate is started!
 		/// If the current gamestate is still in startup this will wait for the current to startup
 		/// CAUTION: this will not actively wait for you! You need to await on the returned task
@@ -34,6 +41,7 @@ namespace Framework.Services.GamestateService {
 		Task<IGamestate> WaitForGamestateStarted();
 
 		/// <summary>
+		/// !WARNING! If you are using this, you are doing something wrong! ONLY used for test driven development!
 		/// Wait for a specific gamestate being started! 
 		/// CAUTION: this will not actively wait for you! You need to await on the returned task
 		/// 
