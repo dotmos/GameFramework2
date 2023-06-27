@@ -37,7 +37,12 @@ namespace Framework {
         /// </summary>
         public static bool IsRunning { get; protected set; }
 
-        public abstract void InjectServicesFor(object instance);
+		/// <summary>
+		/// Whether or not the core is currently running or booting
+		/// </summary>
+		public static bool IsQuitting { get; protected set; }
+
+		public abstract void InjectServicesFor(object instance);
 
         public abstract void Dispose();
 
@@ -263,9 +268,12 @@ namespace Framework {
         }
 
 		bool OnQuit() {
+			IsQuitting = true;
 			for (int i = 0, count = services.Count; i < count; ++i) {
 				services[i].OnQuit();
 			}
+
+			IsRunning = false;
 
 			return true;
 		}
