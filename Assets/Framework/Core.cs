@@ -258,21 +258,21 @@ namespace Framework {
 
                 await Task.Yield();
             }
+
+			for (int i = 0, count = services.Count; i < count; ++i) {
+				services[i].OnQuit();
+			}
 #else
             NOT IMPLEMENTED
 #endif
 
 
 
-            await Task.Yield();
+			await Task.Yield();
         }
 
 		bool OnQuit() {
 			IsQuitting = true;
-			for (int i = 0, count = services.Count; i < count; ++i) {
-				services[i].OnQuit();
-			}
-
 			IsRunning = false;
 
 			return true;
