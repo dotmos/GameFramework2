@@ -79,9 +79,14 @@ namespace Framework.Services.GamestateService {
 		}
 
 		public void SwitchTo<TGamestate>(object context = null) where TGamestate : IGamestate {
-			nextGamestate = gamestates[typeof(TGamestate)];
+			SwitchTo(typeof(TGamestate), context);
+		}
+
+		public void SwitchTo(Type gameStateType,object context = null) {
+			nextGamestate = gamestates[gameStateType];
 			nextGamestate.SetContext(context);
 		}
+
 
 		public async Task TickAsync(float deltaTime) {
 			if (nextGamestate != null) {

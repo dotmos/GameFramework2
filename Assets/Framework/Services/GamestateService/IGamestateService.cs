@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace Framework.Services.GamestateService {
 	public interface IGamestateService : IService {
@@ -26,6 +27,11 @@ namespace Framework.Services.GamestateService {
 		///Switch to a gamestate. This does NOT happen immediatly and might happen in the next frame due to the async nature of gamestates! If you want to setup the gamestate, pass it a context and then setup the gamestate via gamestate.OnEnterAsync/.OnPreEnter/.OnPostEnter
 		/// </summary> 
 		void SwitchTo<TGamestate>(object context = null) where TGamestate : IGamestate;
+
+		/// <summary> 
+		///Switch to a gamestate. This does NOT happen immediatly and might happen in the next frame due to the async nature of gamestates! If you want to setup the gamestate, pass it a context and then setup the gamestate via gamestate.OnEnterAsync/.OnPreEnter/.OnPostEnter
+		/// </summary> 
+		public void SwitchTo(Type gameStateType, object context = null);
 
 		Task TickAsync(float deltaTime);
 
