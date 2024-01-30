@@ -45,7 +45,14 @@ namespace Framework.Services.GamestateService {
         /// Called after exitting the state
         /// </summary>
         void PostExit();
-
+		/// <summary>
+		/// Current gamestate got suspended due to another gamestate got pushed ontop
+		/// </summary>
+		void OnSuspend();
+		/// <summary>
+		/// Current gamestate is resumed after gamestate above got popped
+		/// </summary>
+		void OnResume();
         /// <summary>
         /// Sets the context of the state
         /// </summary>

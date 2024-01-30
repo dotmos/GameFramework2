@@ -11,6 +11,20 @@ namespace Framework.Services.GamestateService {
 		IGamestate currentGamestate;
 		IGamestate nextGamestate;
 
+		/// <summary>
+		/// flag to indicate that the next gamestate should be pushed ontop of the current gamestate that gets suspended
+		/// </summary>
+		private bool pushNextGameState = false;
+		/// <summary>
+		/// flag to indicate to exit the current gamestate and to resume the gamestate ontop of the stack
+		/// </summary>
+		private bool popGameState = false;
+
+		/// <summary>
+		/// flag to indicate that the all gamestates of the stack should be run top to bottom through the gamestate exit lifecycle
+		/// </summary>
+		private bool throwAwayStackGamestates;
+
 		public IGamestate Current => currentGamestate;
 		public IGamestate Next => nextGamestate;
 
@@ -53,6 +67,10 @@ namespace Framework.Services.GamestateService {
 		/// </summary>
 		public bool IsCurrentGamestateStarted => currentGamestateStarted;
 
+		/// <summary>
+		/// Storing pushed gamestates
+		/// </summary>
+		Stack<IGamestate> gamestateStack = new Stack<IGamestate>();
 
 		public override async Task InitializeAsync() {
 			await base.InitializeAsync();
@@ -78,31 +96,69 @@ namespace Framework.Services.GamestateService {
 			gamestates.Add(gamestate.GetType(), gamestate);
 		}
 
-		public void SwitchTo<TGamestate>(object context = null) where TGamestate : IGamestate {
-			SwitchTo(typeof(TGamestate), context);
+		public void SwitchTo<TGamestate>(object context = null, bool removeStackedGS=false) where TGamestate : IGamestate {
+			SwitchTo(typeof(TGamestate), context, removeStackedGS);
 		}
 
-		public void SwitchTo(Type gameStateType,object context = null) {
+		public void SwitchTo(Type gameStateType,object context = null, bool killGamestatesOnStack=false) {
+			if (killGamestatesOnStack) {
+				throwAwayStackGamestates = true;
+			} else {
+				Assert.IsTrue(gamestateStack.Count == 0, "SwitchTo not allowed(yet) with gamestates living on the stack! If you want to force the switch, plz use SwitchTo(gs,ctx,force)");
+			}
 			nextGamestate = gamestates[gameStateType];
 			nextGamestate.SetContext(context);
 		}
 
 
+
+		/// <summary>
+		/// Push new gamestate on the stack, suspending the current and creating the new one
+		/// </summary>
+		/// <typeparam name="TGamestate"></typeparam>
+		/// <param name="context"></param>
+		public void PushGamestate<TGamestate>(object context = null) where TGamestate : IGamestate {
+			nextGamestate = gamestates[typeof(TGamestate)];
+			nextGamestate.SetContext(context);
+			pushNextGameState = true;
+		}
+
+		/// <summary>
+		/// Removing the current gamestate, set the next Gamestate from stack as active and call its resume-callback
+		/// </summary>
+		public void PopGamestate() {
+			Assert.IsTrue(gamestateStack.Count > 0, "No gamestate on the stack! Cannot pop!");
+			popGameState = true;
+		}
+
 		public async Task TickAsync(float deltaTime) {
-			if (nextGamestate != null) {
-				currentGamestateStarted = false;
-
-				//Exit from current state
-				if (currentGamestate != null) {
-					currentGamestate.PreExit();
-
-					await currentGamestate.OnExitAsync();
-
-					currentGamestate.PostExit();
+			if (throwAwayStackGamestates) {
+				throwAwayStackGamestates = false;
+				await RunExitGamestateSequence(currentGamestate);
+				while (gamestateStack.TryPop(out IGamestate gs)) {
+					await RunExitGamestateSequence(gs);
 				}
+			}
+
+
+			if (nextGamestate != null) {
+				if (pushNextGameState) {
+					// push to stack
+					currentGamestate.OnSuspend(); // tell the gamestate it got suspended
+					gamestateStack.Push(currentGamestate); // store current gamestate in the stack
+					pushNextGameState = false;
+				} else {
+					//Exit from current state
+					if (currentGamestate != null) {
+						await RunExitGamestateSequence(currentGamestate);
+					}
+				}
+				
+				currentGamestate = nextGamestate;
+				currentGamestateStarted = false;
 				//Switch to next gamestate
 				nextGamestate.PreEnter();
-				currentGamestate = nextGamestate;
+				currentGamestate = nextGamestate; 
 				nextGamestate = null;
 				await currentGamestate.OnEnterAsync();
 				currentGamestate.PostEnter();
@@ -120,6 +176,18 @@ namespace Framework.Services.GamestateService {
 				}
 			}
 
+			if (popGameState) {
+				popGameState = false;
+				// exit the current gamestate
+				if (currentGamestate != null) {
+					await RunExitGamestateSequence(currentGamestate);
+				}
+
+				currentGamestate = gamestateStack.Pop();
+				// tell the gamestate it got resumed
+				currentGamestate.OnResume();
+			}
+
 			//Tick current gamestate
 			if (currentGamestate != null) {
 				this.deltaTime = deltaTime;
@@ -128,6 +196,20 @@ namespace Framework.Services.GamestateService {
 				//Tick current gamestate
 				currentGamestate.Tick(this.deltaTime);
 			}
+		}
+
+
+		/// <summary>
+		/// Exit lifecycle for gamestates
+		/// </summary>
+		/// <param name="gamestate"></param>
+		/// <returns></returns>
+		private async Task RunExitGamestateSequence(IGamestate gamestate) {
+			currentGamestate.PreExit();
+
+			await currentGamestate.OnExitAsync();
+
+			currentGamestate.PostExit();
 		}
 
 		/// <summary>

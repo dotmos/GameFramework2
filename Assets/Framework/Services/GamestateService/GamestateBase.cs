@@ -81,5 +81,11 @@ namespace Framework.Services.GamestateService {
         public virtual void OnThreadRendezvouz() {
 
         }
-    }
+
+		public virtual void OnSuspend() {
+		}
+
+		public virtual void OnResume() {
+		}
+	}
 }

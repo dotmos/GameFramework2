@@ -25,13 +25,26 @@ namespace Framework.Services.GamestateService {
 
 		/// <summary> 
 		///Switch to a gamestate. This does NOT happen immediatly and might happen in the next frame due to the async nature of gamestates! If you want to setup the gamestate, pass it a context and then setup the gamestate via gamestate.OnEnterAsync/.OnPreEnter/.OnPostEnter
+		/// Gamestates Pushed on the stack can be exited before switchting to the new gamestate using the forceStackeGSRemoval set to true 
 		/// </summary> 
-		void SwitchTo<TGamestate>(object context = null) where TGamestate : IGamestate;
+		void SwitchTo<TGamestate>(object context = null, bool forceStackedGSRemoval=false) where TGamestate : IGamestate;
+
+		/// <summary>
+		/// Push new gamestate on the stack, suspending the current and creating the new one
+		/// </summary>
+		/// <typeparam name="TGamestate"></typeparam>
+		/// <param name="context"></param>
+		void PushGamestate<TGamestate>(object context = null) where TGamestate : IGamestate;
+
+		/// <summary>
+		/// Removing the current gamestate, set the next Gamestate from stack as active and call its resume-callback
+		/// </summary>
+		void PopGamestate();
 
 		/// <summary> 
 		///Switch to a gamestate. This does NOT happen immediatly and might happen in the next frame due to the async nature of gamestates! If you want to setup the gamestate, pass it a context and then setup the gamestate via gamestate.OnEnterAsync/.OnPreEnter/.OnPostEnter
 		/// </summary> 
-		public void SwitchTo(Type gameStateType, object context = null);
+		public void SwitchTo(Type gameStateType, object context = null, bool forceStackedGSRemoval = false);
 
 		Task TickAsync(float deltaTime);
 
@@ -56,5 +69,7 @@ namespace Framework.Services.GamestateService {
 		/// <typeparam name="T"></typeparam>
 		/// <returns></returns>
 		Task<IGamestate> WaitForGamestateStarted<T>();
+
+		
 	}
 }
