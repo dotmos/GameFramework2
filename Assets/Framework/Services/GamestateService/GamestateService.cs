@@ -144,7 +144,7 @@ namespace Framework.Services.GamestateService {
 			if (nextGamestate != null) {
 				if (pushNextGameState) {
 					// push to stack
-					currentGamestate.OnSuspend(); // tell the gamestate it got suspended
+					await currentGamestate.OnSuspend(); // tell the gamestate it got suspended
 					gamestateStack.Push(currentGamestate); // store current gamestate in the stack
 					pushNextGameState = false;
 				} else {
@@ -185,7 +185,7 @@ namespace Framework.Services.GamestateService {
 
 				currentGamestate = gamestateStack.Pop();
 				// tell the gamestate it got resumed
-				currentGamestate.OnResume();
+				await currentGamestate.OnResume();
 			}
 
 			//Tick current gamestate

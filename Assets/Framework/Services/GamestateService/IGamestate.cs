@@ -48,11 +48,11 @@ namespace Framework.Services.GamestateService {
 		/// <summary>
 		/// Current gamestate got suspended due to another gamestate got pushed ontop
 		/// </summary>
-		void OnSuspend();
+		Task OnSuspend();
 		/// <summary>
 		/// Current gamestate is resumed after gamestate above got popped
 		/// </summary>
-		void OnResume();
+		Task OnResume();
         /// <summary>
         /// Sets the context of the state
         /// </summary>

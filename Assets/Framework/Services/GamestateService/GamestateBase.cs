@@ -82,10 +82,12 @@ namespace Framework.Services.GamestateService {
 
         }
 
-		public virtual void OnSuspend() {
+		public virtual async Task OnSuspend() {
+			await Task.Yield();
 		}
 
-		public virtual void OnResume() {
+		public virtual async Task OnResume() {
+			await Task.Yield();
 		}
 	}
 }
