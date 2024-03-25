@@ -205,11 +205,11 @@ namespace Framework.Services.GamestateService {
 		/// <param name="gamestate"></param>
 		/// <returns></returns>
 		private async Task RunExitGamestateSequence(IGamestate gamestate) {
-			currentGamestate.PreExit();
+			gamestate.PreExit();
 
-			await currentGamestate.OnExitAsync();
+			await gamestate.OnExitAsync();
 
-			currentGamestate.PostExit();
+			gamestate.PostExit();
 		}
 
 		/// <summary>
