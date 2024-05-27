@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Framework.Services {
@@ -89,17 +89,26 @@ namespace Framework.Services {
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="obj"></param>
-        public void InjectServicesFor<T>(T instance) where T : class {
+        public void InjectServicesFor<T>(T instance, bool includeBaseClasses = true) where T : class {
             Type type = instance.GetType();
-            System.Reflection.FieldInfo[] properties = type.GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);//.Where(prop => prop.IsDefined(typeof(LocalizedDisplayNameAttribute), false));
-            for (int i = 0; i < properties.Length; ++i) {
-                System.Reflection.FieldInfo prop = properties[i];
-                if (prop.IsDefined(InjectAttributeType, false)) {
-                    prop.SetValue(instance, Resolve(prop.FieldType));
-                    //Debug.Log("- Resolved " + prop.FieldType);
-                    //Debug.Log("Resolved " + prop.DeclaringType);
-                }
-            }
+
+			do {
+				System.Reflection.FieldInfo[] properties = type.GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);//.Where(prop => prop.IsDefined(typeof(LocalizedDisplayNameAttribute), false));
+				for (int i = 0; i < properties.Length; ++i) {
+					System.Reflection.FieldInfo prop = properties[i];
+					if (prop.IsDefined(InjectAttributeType, false)) {
+						prop.SetValue(instance, Resolve(prop.FieldType));
+						//Debug.Log("- Resolved " + prop.FieldType);
+						//Debug.Log("Resolved " + prop.DeclaringType);
+					}
+				}
+
+				if (includeBaseClasses) {
+					type = type.BaseType;
+				} else {
+					type = null;
+				}
+			} while (type != null);
 
             // To get the values themselves, you'd use:
             //var attributes = (LocalizedDisplayNameAttribute[])

@@ -15,7 +15,7 @@ namespace Framework {
         /// Inject services for the given object instance
         /// </summary>
         /// <param name="instance"></param>
-        void InjectServicesFor(object instance);
+        void InjectServicesFor(object instance, bool includeBaseClasses);
     }
 
     /// <summary>
@@ -42,7 +42,7 @@ namespace Framework {
 		/// </summary>
 		public static bool IsQuitting { get; protected set; }
 
-		public abstract void InjectServicesFor(object instance);
+		public abstract void InjectServicesFor(object instance, bool includeBaseClasses = true);
 
         public abstract void Dispose();
 
@@ -205,8 +205,8 @@ namespace Framework {
         /// Inject services for the given object instance
         /// </summary>
         /// <param name="instance"></param>
-        public override void InjectServicesFor(object instance) {
-            serviceInjector.InjectServicesFor(instance);
+        public override void InjectServicesFor(object instance, bool includeBaseClasses = true) {
+            serviceInjector.InjectServicesFor(instance, includeBaseClasses);
         }
 
         /// <summary>
