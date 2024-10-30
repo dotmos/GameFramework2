@@ -131,6 +131,14 @@ namespace Framework.Services.GamestateService {
 			popGameState = true;
 		}
 
+		/// <summary>
+		/// Gets the next game state being resumed if the current gamestate is popped.
+		/// </summary>
+		/// <returns></returns>
+		public IGamestate PeekNextGamestate() {
+			return gamestateStack.Peek();
+		}
+
 		public async Task TickAsync(float deltaTime) {
 			if (throwAwayStackGamestates) {
 				throwAwayStackGamestates = false;

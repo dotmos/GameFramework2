@@ -41,6 +41,12 @@ namespace Framework.Services.GamestateService {
 		/// </summary>
 		void PopGamestate();
 
+		/// <summary>
+		/// Gets the next game state being resumed if the current gamestate is popped.
+		/// </summary>
+		/// <returns></returns>
+		public IGamestate PeekNextGamestate();
+
 		/// <summary> 
 		///Switch to a gamestate. This does NOT happen immediatly and might happen in the next frame due to the async nature of gamestates! If you want to setup the gamestate, pass it a context and then setup the gamestate via gamestate.OnEnterAsync/.OnPreEnter/.OnPostEnter
 		/// </summary> 
