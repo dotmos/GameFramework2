@@ -29,6 +29,12 @@ namespace Framework.Services.GamestateService {
 		public IGamestate Next => nextGamestate;
 
 		/// <summary>
+		/// Current delta time
+		/// </summary>
+		float deltaTime;
+
+#if !FRAMEWORK_DISABLE_WORKER_THREAD
+		/// <summary>
 		/// A worker thread for ticking currentGamestate.TickThreaded()
 		/// </summary>
 		Thread workerThread;
@@ -36,16 +42,12 @@ namespace Framework.Services.GamestateService {
 		/// Thread barrier to rendevouz mainThread and workerthread
 		/// </summary>
 		Barrier threadBarrier;
-
-		/// <summary>
-		/// Current delta time
-		/// </summary>
-		float deltaTime;
-
+#endif
 		class WorkerThreadData {
 			public float deltaTime;
 		}
 		WorkerThreadData workerThreadData;
+
 
 		/// <summary>
 		/// flag to indicate if the current gamestate finished the whole startup-lifecycle
@@ -81,6 +83,7 @@ namespace Framework.Services.GamestateService {
 			currentGamestate = null;
 			nextGamestate = null;
 
+#if !FRAMEWORK_DISABLE_WORKER_THREAD
 			//Create worker thread data object
 			workerThreadData = new WorkerThreadData();
 
@@ -90,6 +93,10 @@ namespace Framework.Services.GamestateService {
 			workerThread = new Thread(WorkerThread);
 			workerThread.Name = "GamestateService-WorkerThread";
 			workerThread.Start();
+#else
+			//Create worker thread data object
+			workerThreadData = new WorkerThreadData();
+#endif
 		}
 
 		public void Register(IGamestate gamestate) {
@@ -200,7 +207,12 @@ namespace Framework.Services.GamestateService {
 			if (currentGamestate != null) {
 				this.deltaTime = deltaTime;
 				//Fire barrier and wait for worker thread to also fire the barrier. Worker thread will call currentGamestate.TickThreaded()
+#if !FRAMEWORK_DISABLE_WORKER_THREAD
 				threadBarrier.SignalAndWait();
+#else
+				ThreadRendezvouz(null);
+				currentGamestate.TickThreaded(workerThreadData.deltaTime);
+#endif
 				//Tick current gamestate
 				currentGamestate.Tick(this.deltaTime);
 			}
@@ -220,6 +232,7 @@ namespace Framework.Services.GamestateService {
 			gamestate.PostExit();
 		}
 
+#if !FRAMEWORK_DISABLE_WORKER_THREAD
 		/// <summary>
 		/// Worker thread
 		/// </summary>
@@ -233,6 +246,7 @@ namespace Framework.Services.GamestateService {
 			threadBarrier.Dispose();
 			Logger.Log("GamestateService: Disposed worker thread and rendezvouz-barrier.");
 		}
+#endif
 
 		/// <summary>
 		/// Called when worker thread and main thread rendevouz
