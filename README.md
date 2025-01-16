@@ -1,3 +1,6 @@
+![UnityVersion](https://img.shields.io/static/v1?label=unity&message=2022.1%2B&color=blue&style=flat&logo=Unity)
+![GitHub last commit](https://img.shields.io/github/last-commit/dotmos/gameframework2)
+![GitHub](https://img.shields.io/github/license/dotmos/gameframework2)
 # GameFramework2
 
 Requires Unity 2022.1 or later
